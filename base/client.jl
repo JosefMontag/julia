@@ -139,7 +139,7 @@ end
 _repl_start = Condition()
 
 syntax_deprecation_warnings(warn::Bool) =
-    Bool(ccall(:jl_parse_depwarn, Cint, (Cint,), warn))
+    ccall(:jl_parse_depwarn, Cint, (Cint,), warn)!=0
 
 function parse_input_line(s::AbstractString)
     # s = bytestring(s)
@@ -242,12 +242,12 @@ let reqarg = Set(UTF8String["--home",          "-H",
         color_set = false
         while true
             # show julia VERSION and quit
-            if Bool(opts.version)
+            if opts.version != 0
                 println(STDOUT, "julia version ", VERSION)
                 exit(0)
             end
             # startup worker
-            if Bool(opts.worker)
+            if opts.worker != 0
                 start_worker() # does not return
             end
             # load file immediately on all processors
@@ -255,7 +255,7 @@ let reqarg = Set(UTF8String["--home",          "-H",
                 require(bytestring(opts.load))
             end
             # show banner
-            quiet = Bool(opts.quiet)
+            quiet = opts.quiet != 0
             # load ~/.juliarc file
             if opts.startupfile == 1
                 load_juliarc()
@@ -264,7 +264,7 @@ let reqarg = Set(UTF8String["--home",          "-H",
                 startup = false
             end
             # load ~/.julia_history file
-            history_file = Bool(opts.historyfile)
+            history_file = opts.historyfile != 0
             # add processors
             if opts.nprocs > 0
                 addprocs(opts.nprocs)
@@ -273,7 +273,7 @@ let reqarg = Set(UTF8String["--home",          "-H",
             if opts.machinefile != C_NULL
                 addprocs(load_machine_file(bytestring(opts.machinefile)))
             end
-            global is_interactive = Bool(opts.isinteractive)
+            global is_interactive = opts.isinteractive != 0
             # REPL color
             if opts.color == 0
                 color_set = false
